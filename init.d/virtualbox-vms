@@ -1,0 +1,54 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:       virtualbox-vms
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the selected vms
+# Description:       it looks into configuration and starts and stops several virtualbox vms
+### END INIT INFO
+
+NAME=virtualbox-vms
+DAEMON=/usr/lib/virtualbox/VBoxHeadless
+# Exit if executable is not installed
+[ -x $DAEMON ] || exit 0
+
+# Get lsb functions
+. /lib/lsb/init-functions
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+
+# Virtualbox user
+USER=virtualbox
+
+
+case "$1" in
+  start)
+        log_action_msg "Starting VirtualBox vms..."
+        while read vms; do
+          clean_vms=`echo $vms | sed 's/ {.*//'`
+
+          log_action_begin_msg $clean_vms
+          log_action_end_msg 0
+        done < /etc/virtualbox/start-vms.conf
+        ;;
+  stop)
+        log_action_begin_msg "Stoping VirtualBox vms..."
+        log_end_msg 0
+        ;;
+  restart|force-reload)
+        $0 stop
+        sleep 1
+        $0 start
+        #echo "$NAME."
+        ;;
+  *)
+        N=/etc/init.d/$NAME
+        log_success_msg "Usage: $N {start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+
